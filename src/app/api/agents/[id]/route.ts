@@ -3,11 +3,10 @@ import { AgentService } from "@/lib/services/agent-service";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Await params here based on Next.js 15+ patterns for dynamic routes
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json({ error: "Agent ID is required" }, { status: 400 });
@@ -20,7 +19,8 @@ export async function GET(
     }
 
     return NextResponse.json(agent);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Internal server error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

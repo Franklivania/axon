@@ -54,9 +54,11 @@ export class WalletManager {
       const decrypted_secret_base58 = decryptText(encrypted_secret);
       const secret_key_bytes = bs58.decode(decrypted_secret_base58);
       return Keypair.fromSecretKey(secret_key_bytes);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Internal server error";
       throw new Error(
-        `Failed to retrieve or decrypt wallet for agent ${agent_id}: ${error.message}`
+        `Failed to retrieve or decrypt wallet for agent ${agent_id}: ${message}`
       );
     }
   }

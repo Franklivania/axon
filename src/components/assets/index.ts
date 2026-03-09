@@ -1,1 +1,1 @@
-export { default as AxonBg } from './images/axon-bg';
+export { default as AxonBg } from "./images/axon-bg";

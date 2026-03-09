@@ -5,7 +5,10 @@ export async function GET() {
   try {
     const agents = await AgentService.getAgents();
     return NextResponse.json(agents);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
+    console.error(`[get-agents] Error fetching agents: ${message}`);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

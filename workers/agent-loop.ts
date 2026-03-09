@@ -2,6 +2,7 @@ import {
   getActiveUnlockedAgentsQuery,
   acquireExecutionLockQuery,
   releaseExecutionLockQuery,
+  releaseExecutionLockOnlyQuery,
 } from "../src/lib/db/queries";
 import { AgentEngine } from "../src/lib/agents/agent-engine";
 import { Logger } from "../src/lib/utils/logger";
@@ -28,10 +29,16 @@ const POLL_INTERVAL = 10_000;
  * Known limitation: if the worker process is killed while holding an execution_lock
  * the agent will remain locked indefinitely. Use the stop→start API to reset it.
  */
-async function process_agent(agent: Awaited<ReturnType<typeof getActiveUnlockedAgentsQuery>>[0]): Promise<void> {
+async function process_agent(
+  agent: Awaited<ReturnType<typeof getActiveUnlockedAgentsQuery>>[0]
+): Promise<void> {
   // Atomic compare-and-set: returns null if another worker beat us to the lock
   const locked_agent = await acquireExecutionLockQuery(agent.id);
   if (!locked_agent) return;
+
+  // Track whether the agent actually ran so we only update last_execution_at
+  // when execution occurred (not on interval-skip releases).
+  let did_execute = false;
 
   try {
     // Interval check using the DB-persisted last_execution_at (survives restarts)
@@ -45,7 +52,10 @@ async function process_agent(agent: Awaited<ReturnType<typeof getActiveUnlockedA
       return;
     }
 
-    console.log(`[Worker] Executing agent: ${locked_agent.name} (${locked_agent.id})`);
+    did_execute = true;
+    console.log(
+      `[Worker] Executing agent: ${locked_agent.name} (${locked_agent.id})`
+    );
     await AgentEngine.executeAgent(locked_agent);
   } catch (err: unknown) {
     // Per-agent error: log but do NOT rethrow so other agents continue
@@ -53,8 +63,12 @@ async function process_agent(agent: Awaited<ReturnType<typeof getActiveUnlockedA
     console.error(`[Worker] Agent ${agent.id} error: ${msg}`);
     await Logger.log("execution_error", `Worker error: ${msg}`, agent.id);
   } finally {
-    // Always release the lock and record last_execution_at, even on failure
-    await releaseExecutionLockQuery(agent.id);
+    // Only update last_execution_at when the agent actually ran
+    if (did_execute) {
+      await releaseExecutionLockQuery(agent.id);
+    } else {
+      await releaseExecutionLockOnlyQuery(agent.id);
+    }
   }
 }
 
@@ -81,7 +95,9 @@ async function workerLoop(): Promise<void> {
       await Promise.allSettled(agents.map(process_agent));
     } catch (err: unknown) {
       // Top-level loop error (e.g., DB unreachable) — log and continue
-      console.error(`[Worker] Loop error: ${err instanceof Error ? err.message : String(err)}`);
+      console.error(
+        `[Worker] Loop error: ${err instanceof Error ? err.message : String(err)}`
+      );
     }
 
     await new Promise<void>((resolve) => setTimeout(resolve, POLL_INTERVAL));

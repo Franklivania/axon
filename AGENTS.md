@@ -15,8 +15,8 @@ by the wallet execution layer.
 Each agent owns a single wallet.
 
 User
- └ Agent
-      └ Wallet
+└ Agent
+└ Wallet
 
 Agents are responsible for:
 
@@ -100,13 +100,13 @@ Agents run in a periodic loop.
 Execution flow:
 
 agent_tick()
-  ↓
+↓
 evaluate_strategy()
-  ↓
+↓
 generate_instruction()
-  ↓
+↓
 wallet.execute()
-  ↓
+↓
 log_result()
 
 Agents must never block the runtime or perform long synchronous operations.

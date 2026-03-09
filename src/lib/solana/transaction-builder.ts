@@ -1,11 +1,20 @@
-import { PublicKey, SystemProgram, TransactionMessage, VersionedTransaction, TransactionInstruction } from "@solana/web3.js";
-import { createTransferInstruction, getAssociatedTokenAddress } from "@solana/spl-token";
+import {
+  PublicKey,
+  SystemProgram,
+  TransactionMessage,
+  VersionedTransaction,
+  TransactionInstruction,
+} from "@solana/web3.js";
+import {
+  createTransferInstruction,
+  getAssociatedTokenAddress,
+} from "@solana/spl-token";
 import { getConnection } from "./connection";
 
 export class TransactionBuilder {
   /**
    * Builds a VersionedTransaction for transferring native SOL.
-   * 
+   *
    * @param senderAddress - The sender wallet address
    * @param recipientAddress - The recipient wallet address
    * @param lamports - The amount of SOL to send in lamports
@@ -25,13 +34,15 @@ export class TransactionBuilder {
       lamports,
     });
 
-    return await this.compileToVersionedTransaction(sender, [transferInstruction]);
+    return await this.compileToVersionedTransaction(sender, [
+      transferInstruction,
+    ]);
   }
 
   /**
    * Builds a VersionedTransaction for transferring SPL tokens.
    * This assumes the recipient's Associated Token Account (ATA) already exists.
-   * 
+   *
    * @param senderAddress - The sender wallet address
    * @param recipientAddress - The recipient wallet address
    * @param mintAddress - The token mint address
@@ -59,7 +70,9 @@ export class TransactionBuilder {
       amount
     );
 
-    return await this.compileToVersionedTransaction(sender, [transferInstruction]);
+    return await this.compileToVersionedTransaction(sender, [
+      transferInstruction,
+    ]);
   }
 
   /**

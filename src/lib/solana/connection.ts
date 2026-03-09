@@ -1,4 +1,10 @@
-import { Connection, PublicKey, Transaction, SendOptions, VersionedTransaction } from "@solana/web3.js";
+import {
+  Connection,
+  PublicKey,
+  Transaction,
+  SendOptions,
+  VersionedTransaction,
+} from "@solana/web3.js";
 import { config } from "../config/env";
 
 // RPC endpoint driven by env config — validated at startup, never hardcoded
@@ -25,7 +31,7 @@ export const getConnection = () => {
 
 /**
  * Queries the SOL balance for a given wallet address.
- * 
+ *
  * @param address - Base58 string of the wallet address
  * @returns Balance in lamports
  */
@@ -37,7 +43,7 @@ export const getBalance = async (address: string): Promise<number> => {
 
 /**
  * Sends and confirms a transaction on Devnet
- * 
+ *
  * @param transaction - The transaction to send
  * @param options - Optional send options
  * @returns The transaction signature
@@ -63,7 +69,10 @@ export const sendAndConfirmTransaction = async (
     // In web3.js, if we only have the transaction we use sendRawTransaction
     // Note: we assume the transaction is already fully signed by the wallet manager
     const rawTransaction = transaction.serialize();
-    const signature = await connection.sendRawTransaction(rawTransaction, options);
+    const signature = await connection.sendRawTransaction(
+      rawTransaction,
+      options
+    );
     const latestBlockhash = await connection.getLatestBlockhash();
     await connection.confirmTransaction({
       signature,

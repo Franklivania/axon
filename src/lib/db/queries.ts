@@ -12,7 +12,13 @@ export async function createAgentQuery(
   id?: string // Task 10: accept pre-generated ID to eliminate temp-file rename hack
 ) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const values: any = { name, walletAddress, strategy, intervalMs, status: "active" };
+  const values: any = {
+    name,
+    walletAddress,
+    strategy,
+    intervalMs,
+    status: "active",
+  };
   if (id) values.id = id;
 
   const [agent] = await db.insert(agents).values(values).returning();
@@ -37,6 +43,15 @@ export async function updateAgentStatusQuery(id: string, status: string) {
   return agent;
 }
 
+export async function updateAgentConfigQuery(id: string, intervalMs: number) {
+  const [agent] = await db
+    .update(agents)
+    .set({ intervalMs })
+    .where(eq(agents.id, id))
+    .returning();
+  return agent;
+}
+
 /** Wallets */
 
 export async function createWalletRecordQuery(
@@ -44,16 +59,22 @@ export async function createWalletRecordQuery(
   address: string,
   encrypted_key?: string // Task 1: passed at INSERT time for DatabaseKeyStore mode
 ) {
-  const [wallet] = await db.insert(wallets).values({
-    agentId,
-    address,
-    encrypted_key: encrypted_key ?? null,
-  }).returning();
+  const [wallet] = await db
+    .insert(wallets)
+    .values({
+      agentId,
+      address,
+      encrypted_key: encrypted_key ?? null,
+    })
+    .returning();
   return wallet;
 }
 
 export async function getWalletByAgentIdQuery(agentId: string) {
-  const [wallet] = await db.select().from(wallets).where(eq(wallets.agentId, agentId));
+  const [wallet] = await db
+    .select()
+    .from(wallets)
+    .where(eq(wallets.agentId, agentId));
   return wallet;
 }
 
@@ -65,12 +86,15 @@ export async function recordTransactionQuery(
   signature: string,
   status: string
 ) {
-  const [tx] = await db.insert(transactions).values({
-    agentId,
-    walletAddress,
-    signature,
-    status,
-  }).returning();
+  const [tx] = await db
+    .insert(transactions)
+    .values({
+      agentId,
+      walletAddress,
+      signature,
+      status,
+    })
+    .returning();
   return tx;
 }
 
@@ -80,12 +104,19 @@ export async function getTransactionsQuery() {
 
 /** Logs */
 
-export async function insertLogQuery(action: string, message: string, agentId?: string) {
-  const [log] = await db.insert(logs).values({
-    action,
-    message,
-    agentId: agentId || null,
-  }).returning();
+export async function insertLogQuery(
+  action: string,
+  message: string,
+  agentId?: string
+) {
+  const [log] = await db
+    .insert(logs)
+    .values({
+      action,
+      message,
+      agentId: agentId || null,
+    })
+    .returning();
   return log;
 }
 
@@ -113,13 +144,26 @@ export async function acquireExecutionLockQuery(agent_id: string) {
 }
 
 /**
- * Releases the execution lock and records the current timestamp as
- * last_execution_at. Called in the worker's finally block so it always runs.
+ * Releases the execution lock AND records the current timestamp as
+ * last_execution_at. Call this only when the agent actually ran.
  */
 export async function releaseExecutionLockQuery(agent_id: string) {
   const [agent] = await db
     .update(agents)
     .set({ execution_lock: false, last_execution_at: new Date() })
+    .where(eq(agents.id, agent_id))
+    .returning();
+  return agent;
+}
+
+/**
+ * Releases the execution lock WITHOUT updating last_execution_at.
+ * Call this when the agent was skipped (interval not yet elapsed).
+ */
+export async function releaseExecutionLockOnlyQuery(agent_id: string) {
+  const [agent] = await db
+    .update(agents)
+    .set({ execution_lock: false })
     .where(eq(agents.id, agent_id))
     .returning();
   return agent;

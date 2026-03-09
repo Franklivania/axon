@@ -20,7 +20,8 @@ export type ApiResponse<T = unknown> = {
 };
 
 export function status_from_http(status_code: number): ApiStatus {
-  if (status_code >= 200 && status_code < 300) return status_code === 201 ? "created" : "ok";
+  if (status_code >= 200 && status_code < 300)
+    return status_code === 201 ? "created" : "ok";
   if (status_code === 401) return "unauthorized";
   if (status_code === 403) return "forbidden";
   if (status_code === 404) return "not_found";

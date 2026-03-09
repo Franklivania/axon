@@ -27,19 +27,30 @@ export class AgentRegistry {
    * @param intervalMs - Execution loop interval in milliseconds
    * @returns The created agent DB record
    */
-  public static async createAgent(name: string, strategy: string, intervalMs: number) {
+  public static async createAgent(
+    name: string,
+    strategy: string,
+    intervalMs: number
+  ) {
     // Pre-generate the agent ID — used for both DB and key storage
     const agent_id = crypto.randomUUID();
 
     // Generate keypair + encrypt key without persisting anything yet
-    const { wallet_address, encrypted_key } = WalletManager.generateEncryptedWallet();
+    const { wallet_address, encrypted_key } =
+      WalletManager.generateEncryptedWallet();
 
     // Persist encrypted key via key store (file mode writes to disk here;
     // DB mode will persist it via the wallet row INSERT below)
     await getKeyStore().saveEncryptedKey(agent_id, encrypted_key);
 
     // Insert agent row with the pre-generated ID
-    const agent = await createAgentQuery(name, wallet_address, strategy, intervalMs, agent_id);
+    const agent = await createAgentQuery(
+      name,
+      wallet_address,
+      strategy,
+      intervalMs,
+      agent_id
+    );
 
     // Insert wallet metadata row — encrypted_key is included so DB mode has it
     await createWalletRecordQuery(agent.id, wallet_address, encrypted_key);
@@ -56,7 +67,7 @@ export class AgentRegistry {
 
   /**
    * Retrieves a specific agent by ID.
-   * 
+   *
    * @param agentId - The agent ID
    */
   public static async getAgentById(agentId: string) {
@@ -65,7 +76,7 @@ export class AgentRegistry {
 
   /**
    * Updates an agent's execution status.
-   * 
+   *
    * @param agentId - The agent ID
    * @param status - The new status ('active', 'paused', 'stopped')
    */

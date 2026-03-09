@@ -36,7 +36,9 @@ export const agents = pgTable(
 // Table: wallets
 export const wallets = pgTable("wallets", {
   id: uuid("id").primaryKey().defaultRandom(),
-  agentId: uuid("agent_id").notNull().references(() => agents.id),
+  agentId: uuid("agent_id")
+    .notNull()
+    .references(() => agents.id),
   address: text("address").notNull(),
   // Task 1: stores AES-encrypted private key for DatabaseKeyStore mode (null in file mode)
   encrypted_key: text("encrypted_key"),
@@ -48,7 +50,9 @@ export const transactions = pgTable(
   "transactions",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    agentId: uuid("agent_id").notNull().references(() => agents.id),
+    agentId: uuid("agent_id")
+      .notNull()
+      .references(() => agents.id),
     walletAddress: text("wallet_address").notNull(),
     signature: text("signature").notNull(),
     status: text("status").notNull(), // 'success' | 'failed'

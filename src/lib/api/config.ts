@@ -44,12 +44,17 @@ async function parse_response<T>(response: Response): Promise<T> {
   try {
     json = (await response.json()) as ApiResponse<T>;
   } catch {
-    const error = new Error(response.statusText || "Request failed") as Error & { status?: string; code?: number };
+    const error = new Error(
+      response.statusText || "Request failed"
+    ) as Error & { status?: string; code?: number };
     error.code = response.status;
     throw error;
   }
   if (!json.success) {
-    const error = new Error(json.message ?? "Request failed") as Error & { status?: string; code?: number };
+    const error = new Error(json.message ?? "Request failed") as Error & {
+      status?: string;
+      code?: number;
+    };
     error.status = json.status;
     error.code = response.status;
     throw error;
@@ -59,7 +64,9 @@ async function parse_response<T>(response: Response): Promise<T> {
 
 export async function getData<T>(path: string, init?: RequestInit): Promise<T> {
   const cfg = get_config();
-  const url = path.startsWith("http") ? path : `${cfg.base_url}${path.startsWith("/") ? "" : "/"}${path}`;
+  const url = path.startsWith("http")
+    ? path
+    : `${cfg.base_url}${path.startsWith("/") ? "" : "/"}${path}`;
   const response = await fetch(url, {
     ...init,
     method: "GET",
@@ -69,9 +76,15 @@ export async function getData<T>(path: string, init?: RequestInit): Promise<T> {
   return parse_response<T>(response);
 }
 
-export async function postData<T>(path: string, body?: unknown, init?: RequestInit): Promise<T> {
+export async function postData<T>(
+  path: string,
+  body?: unknown,
+  init?: RequestInit
+): Promise<T> {
   const cfg = get_config();
-  const url = path.startsWith("http") ? path : `${cfg.base_url}${path.startsWith("/") ? "" : "/"}${path}`;
+  const url = path.startsWith("http")
+    ? path
+    : `${cfg.base_url}${path.startsWith("/") ? "" : "/"}${path}`;
   const response = await fetch(url, {
     ...init,
     method: "POST",
@@ -82,9 +95,15 @@ export async function postData<T>(path: string, body?: unknown, init?: RequestIn
   return parse_response<T>(response);
 }
 
-export async function patchData<T>(path: string, body?: unknown, init?: RequestInit): Promise<T> {
+export async function patchData<T>(
+  path: string,
+  body?: unknown,
+  init?: RequestInit
+): Promise<T> {
   const cfg = get_config();
-  const url = path.startsWith("http") ? path : `${cfg.base_url}${path.startsWith("/") ? "" : "/"}${path}`;
+  const url = path.startsWith("http")
+    ? path
+    : `${cfg.base_url}${path.startsWith("/") ? "" : "/"}${path}`;
   const response = await fetch(url, {
     ...init,
     method: "PATCH",
@@ -95,9 +114,15 @@ export async function patchData<T>(path: string, body?: unknown, init?: RequestI
   return parse_response<T>(response);
 }
 
-export async function updateData<T>(path: string, body?: unknown, init?: RequestInit): Promise<T> {
+export async function updateData<T>(
+  path: string,
+  body?: unknown,
+  init?: RequestInit
+): Promise<T> {
   const cfg = get_config();
-  const url = path.startsWith("http") ? path : `${cfg.base_url}${path.startsWith("/") ? "" : "/"}${path}`;
+  const url = path.startsWith("http")
+    ? path
+    : `${cfg.base_url}${path.startsWith("/") ? "" : "/"}${path}`;
   const response = await fetch(url, {
     ...init,
     method: "PUT",
@@ -108,9 +133,14 @@ export async function updateData<T>(path: string, body?: unknown, init?: Request
   return parse_response<T>(response);
 }
 
-export async function deleteData<T>(path: string, init?: RequestInit): Promise<T> {
+export async function deleteData<T>(
+  path: string,
+  init?: RequestInit
+): Promise<T> {
   const cfg = get_config();
-  const url = path.startsWith("http") ? path : `${cfg.base_url}${path.startsWith("/") ? "" : "/"}${path}`;
+  const url = path.startsWith("http")
+    ? path
+    : `${cfg.base_url}${path.startsWith("/") ? "" : "/"}${path}`;
   const response = await fetch(url, {
     ...init,
     method: "DELETE",
@@ -120,9 +150,15 @@ export async function deleteData<T>(path: string, init?: RequestInit): Promise<T
   return parse_response<T>(response);
 }
 
-export async function multipartData<T>(path: string, form: FormData, init?: RequestInit): Promise<T> {
+export async function multipartData<T>(
+  path: string,
+  form: FormData,
+  init?: RequestInit
+): Promise<T> {
   const cfg = get_config();
-  const url = path.startsWith("http") ? path : `${cfg.base_url}${path.startsWith("/") ? "" : "/"}${path}`;
+  const url = path.startsWith("http")
+    ? path
+    : `${cfg.base_url}${path.startsWith("/") ? "" : "/"}${path}`;
   const headers = new Headers(init?.headers);
   if (cfg.locale) headers.set("x-locale", cfg.locale);
   const response = await fetch(url, {

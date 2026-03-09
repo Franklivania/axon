@@ -1,5 +1,10 @@
-import { TransactionInstruction, PublicKey, SystemProgram } from "@solana/web3.js";
+import {
+  TransactionInstruction,
+  PublicKey,
+  SystemProgram,
+} from "@solana/web3.js";
 import { getBalance } from "../../solana/connection";
+import { Agent } from "../agent-engine";
 
 export class BalanceTriggerStrategy {
   /**
@@ -11,7 +16,9 @@ export class BalanceTriggerStrategy {
    * @param agent - The agent data
    * @returns TransactionInstruction[] or null if threshold not met
    */
-  public static async evaluate(agent: any): Promise<TransactionInstruction[] | null> {
+  public static async evaluate(
+    agent: Agent
+  ): Promise<TransactionInstruction[] | null> {
     const lamports_balance = await getBalance(agent.walletAddress);
 
     // Threshold: 0.05 SOL

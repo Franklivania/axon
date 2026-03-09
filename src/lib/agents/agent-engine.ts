@@ -9,6 +9,20 @@ import {
 import { TransactionBuilder } from "../solana/transaction-builder";
 import { TransferStrategy } from "./strategies/transfer_strategy";
 import { BalanceTriggerStrategy } from "./strategies/balance_trigger_strategy";
+import { TransactionInstruction } from "@solana/web3.js";
+
+export interface Agent {
+  id: string;
+  name: string;
+  walletAddress: string;
+  strategy: string;
+  intervalMs: number;
+  status: string;
+  execution_lock: boolean;
+  last_execution_at: Date | null;
+  pending_tx: string | null;
+  createdAt: Date;
+}
 
 export class AgentEngine {
   /**
@@ -36,7 +50,7 @@ export class AgentEngine {
    *
    * @param agent - The agent database record (must include pending_tx field)
    */
-  public static async executeAgent(agent: any) {
+  public static async executeAgent(agent: Agent) {
     // Task 4: skip if a previous execution left a pending transaction
     if (agent.pending_tx) {
       await insertLogQuery(
@@ -52,10 +66,14 @@ export class AgentEngine {
     await setPendingTxQuery(agent.id, idempotency_key);
 
     try {
-      await insertLogQuery("execution_started", `Agent ${agent.name} execution started`, agent.id);
+      await insertLogQuery(
+        "execution_started",
+        `Agent ${agent.name} execution started`,
+        agent.id
+      );
 
       // Task 9: evaluate strategy — returns raw instructions, never a signed tx
-      let instructions = null;
+      let instructions: TransactionInstruction[] | null = null;
 
       switch (agent.strategy) {
         case "transfer_strategy":
@@ -65,7 +83,11 @@ export class AgentEngine {
           instructions = await BalanceTriggerStrategy.evaluate(agent);
           break;
         default:
-          await insertLogQuery("strategy_error", `Unknown strategy: ${agent.strategy}`, agent.id);
+          await insertLogQuery(
+            "strategy_error",
+            `Unknown strategy: ${agent.strategy}`,
+            agent.id
+          );
           return;
       }
 
@@ -78,33 +100,53 @@ export class AgentEngine {
         return;
       }
 
-      await insertLogQuery("strategy_decision", `Agent ${agent.name} generated instructions`, agent.id);
+      await insertLogQuery(
+        "strategy_decision",
+        `Agent ${agent.name} generated instructions`,
+        agent.id
+      );
 
       // Task 9: compile instructions into VersionedTransaction (blockhash fetched here,
       // not during strategy evaluation, so it is always fresh)
-      const transaction = await TransactionBuilder.compileToVersionedTransaction(
-        agent.walletAddress,
-        instructions
-      );
+      const transaction =
+        await TransactionBuilder.compileToVersionedTransaction(
+          agent.walletAddress,
+          instructions
+        );
 
       // Task 5: WalletManager signs and waits for on-chain confirmation before returning
-      const signature = await WalletManager.executeTransaction(agent.id, transaction);
+      const signature = await WalletManager.executeTransaction(
+        agent.id,
+        transaction
+      );
 
       // Task 5: record actual confirmed success — not optimistic
-      await recordTransactionQuery(agent.id, agent.walletAddress, signature, "success");
-      await insertLogQuery("transaction_sent", `Transaction sent: ${signature}`, agent.id);
+      await recordTransactionQuery(
+        agent.id,
+        agent.walletAddress,
+        signature,
+        "success"
+      );
+      await insertLogQuery(
+        "transaction_sent",
+        `Transaction sent: ${signature}`,
+        agent.id
+      );
       await insertLogQuery(
         "transaction_confirmed",
         `https://explorer.solana.com/tx/${signature}?cluster=devnet`,
         agent.id
       );
-    } catch (error: any) {
-      console.error(`[agent-engine] Error executing agent ${agent.id}: ${error.message}`);
-      await insertLogQuery("execution_error", `Error: ${error.message}`, agent.id);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(
+        `[agent-engine] Error executing agent ${agent.id}: ${message}`
+      );
+      await insertLogQuery("execution_error", `Error: ${message}`, agent.id);
       await recordTransactionQuery(
         agent.id,
         agent.walletAddress,
-        error.message.substring(0, 100),
+        message.substring(0, 100),
         "failed"
       );
     } finally {

@@ -1,5 +1,10 @@
-import { TransactionInstruction, PublicKey, SystemProgram } from "@solana/web3.js";
+import {
+  TransactionInstruction,
+  PublicKey,
+  SystemProgram,
+} from "@solana/web3.js";
 import { getBalance } from "../../solana/connection";
+import { Agent } from "../agent-engine";
 
 export class TransferStrategy {
   /**
@@ -12,15 +17,17 @@ export class TransferStrategy {
    * @param agent - The agent data from DB
    * @returns TransactionInstruction[] or null if conditions aren't met
    */
-  public static async evaluate(agent: any): Promise<TransactionInstruction[] | null> {
+  public static async evaluate(
+    agent: Agent
+  ): Promise<TransactionInstruction[] | null> {
     const lamports_balance = await getBalance(agent.walletAddress);
 
     // 0.001 SOL transfer amount + 5000 lamport fee buffer
     const transfer_amount = 1_000_000;
     if (lamports_balance < transfer_amount + 5000) return null;
 
-    // Burn address (SystemProgram ID) used as a safe demo recipient
-    const burn_address = "11111111111111111111111111111111";
+    // Incinerator address — a valid, permanently unspendable account that accepts SOL on all clusters
+    const burn_address = "1nc1nerator11111111111111111111111111111111111";
 
     return [
       SystemProgram.transfer({

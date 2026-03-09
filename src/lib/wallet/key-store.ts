@@ -36,7 +36,10 @@ export class LocalFileKeyStore implements IKeyStore {
     });
   }
 
-  async saveEncryptedKey(agent_id: string, encrypted_key: string): Promise<void> {
+  async saveEncryptedKey(
+    agent_id: string,
+    encrypted_key: string
+  ): Promise<void> {
     await this.ensure_directory();
     const wallet_path = path.join(this.wallets_dir, `${agent_id}.wallet.enc`);
     await fs.writeFile(wallet_path, encrypted_key, "utf-8");
@@ -58,7 +61,10 @@ export class DatabaseKeyStore implements IKeyStore {
    * The wallet row must already exist (created by createWalletRecordQuery)
    * before this is called.
    */
-  async saveEncryptedKey(agent_id: string, encrypted_key: string): Promise<void> {
+  async saveEncryptedKey(
+    agent_id: string,
+    encrypted_key: string
+  ): Promise<void> {
     await db
       .update(wallets)
       .set({ encrypted_key })

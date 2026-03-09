@@ -1,7 +1,11 @@
 import { AgentRegistry } from "../agents/agent-registry";
 
 export class AgentService {
-  public static async createAgent(name: string, strategy: string, intervalMs: number) {
+  public static async createAgent(
+    name: string,
+    strategy: string,
+    intervalMs: number
+  ) {
     return await AgentRegistry.createAgent(name, strategy, intervalMs);
   }
 

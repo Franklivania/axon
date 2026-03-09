@@ -93,14 +93,17 @@ let _key_store_instance: IKeyStore | null = null;
 
 /**
  * Returns the singleton IKeyStore selected by the WALLET_STORAGE env var.
- * Defaults to LocalFileKeyStore if the variable is absent or set to "file".
- * Set WALLET_STORAGE=db for serverless / Neon-only deployments.
+ * Automatically uses DatabaseKeyStore on Vercel or any production environment
+ * where the filesystem is read-only. Falls back to LocalFileKeyStore for local dev.
  */
 export function getKeyStore(): IKeyStore {
   if (_key_store_instance) return _key_store_instance;
-  _key_store_instance =
-    process.env.WALLET_STORAGE === "db"
-      ? new DatabaseKeyStore()
-      : new LocalFileKeyStore();
+  const useDb =
+    process.env.WALLET_STORAGE === "db" ||
+    !!process.env.VERCEL ||
+    process.env.NODE_ENV === "production";
+  _key_store_instance = useDb
+    ? new DatabaseKeyStore()
+    : new LocalFileKeyStore();
   return _key_store_instance;
 }

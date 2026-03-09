@@ -24,7 +24,7 @@ export default function Home() {
 
         <article className="space-y-5 md:my-7">
           <h1 className="w-max whitespace-nowrap text-lg md:text-4xl lg:text-6xl font-mono font-bold text-center">
-            Autonomus Liquidity
+            Autonomous Liquidity
             <div className="text-primary">Human Understanding</div>
           </h1>
 

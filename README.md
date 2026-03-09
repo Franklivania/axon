@@ -16,6 +16,9 @@
 
 Axon is a full-stack framework that enables AI agents to autonomously execute transactions on the Solana blockchain. Each agent owns a non-custodial wallet, executes programmable strategies on a schedule, and operates within security boundaries enforced at every layer of the stack.
 
+[Demo Video](https://youtu.be/Fk4ZaOQgXv4)
+[X/Twitter Link](https://x.com/Franklivania/status/2031124138807669198?s=20)
+
 ---
 
 ## Wallet Design

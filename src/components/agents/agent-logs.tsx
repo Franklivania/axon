@@ -5,7 +5,7 @@ import { Log } from "@/lib/api/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Check, ClipboardCopy, Copy, Terminal } from "lucide-react";
+import { Check, ClipboardCopy, Copy, Terminal, RefreshCw } from "lucide-react";
 
 function formatLog(log: Log) {
   return `[${new Date(log.createdAt).toLocaleTimeString()}] [${log.action}] ${log.message}`;
@@ -115,11 +115,24 @@ export function AgentLogs({ logs, isLoading }: AgentLogsProps) {
   );
 }
 
-export function AgentLogsHeader() {
+export function AgentLogsHeader({ onRefresh }: { onRefresh?: () => void }) {
   return (
-    <span className="flex items-center gap-2">
-      <Terminal className="h-4 w-4" />
-      Logs
-    </span>
+    <div className="flex items-center justify-between w-full">
+      <span className="flex items-center gap-2">
+        <Terminal className="h-4 w-4" />
+        Logs
+      </span>
+      {onRefresh && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onRefresh}
+          className="h-6 w-6 p-0"
+          title="Refresh logs"
+        >
+          <RefreshCw className="h-3.5 w-3.5" />
+        </Button>
+      )}
+    </div>
   );
 }

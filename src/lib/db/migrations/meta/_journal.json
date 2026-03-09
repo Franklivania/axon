@@ -15,6 +15,13 @@
       "when": 1773070437941,
       "tag": "0001_normal_vance_astro",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773083563311,
+      "tag": "0002_last_sentinels",
+      "breakpoints": true
     }
   ]
 }

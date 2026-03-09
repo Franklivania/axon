@@ -4,17 +4,26 @@ import {
   acquireExecutionLockQuery,
   releaseExecutionLockQuery,
   releaseExecutionLockOnlyQuery,
+  getSystemSettingQuery,
+  setSystemSettingQuery,
 } from "@/lib/db/queries";
 import { AgentEngine } from "@/lib/agents/agent-engine";
 import { Logger } from "@/lib/utils/logger";
 
-// Vercel calls this route on the cron schedule defined in vercel.json.
 // Each invocation runs one poll cycle — equivalent to one tick of the worker loop.
 export async function GET(request: Request) {
   // Protect the endpoint so only Vercel's cron system can trigger it
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Daily limiter for Hobby plan: only run once per day
+  const today = new Date().toISOString().split("T")[0];
+  const lastRun = await getSystemSettingQuery("last_cron_run");
+  if (lastRun && lastRun.value === today) {
+    await Logger.log("cron_skipped", `Cron already ran today: ${today}`);
+    return NextResponse.json({ message: "Already ran today" });
   }
 
   const agents = await getActiveUnlockedAgentsQuery();
@@ -47,6 +56,9 @@ export async function GET(request: Request) {
       }
     })
   );
+
+  // Mark as run today
+  await setSystemSettingQuery("last_cron_run", today);
 
   return NextResponse.json({ ok: true, agents: agents.length });
 }

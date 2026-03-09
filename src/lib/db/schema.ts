@@ -9,6 +9,15 @@ import {
   index,
 } from "drizzle-orm/pg-core";
 
+// Table: system_settings
+export const systemSettings = pgTable("system_settings", {
+  id: serial("id").primaryKey(),
+  key: text("key").notNull().unique(),
+  value: text("value"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Table: agents
 export const agents = pgTable(
   "agents",

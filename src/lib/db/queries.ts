@@ -1,6 +1,6 @@
 import { eq, and } from "drizzle-orm";
 import { db } from "./client";
-import { agents, wallets, transactions, logs } from "./schema";
+import { agents, wallets, transactions, logs, systemSettings } from "./schema";
 
 /** Agents */
 
@@ -210,4 +210,26 @@ export async function clearPendingTxQuery(agent_id: string) {
     .where(eq(agents.id, agent_id))
     .returning();
   return agent;
+}
+
+/** System Settings */
+
+export async function getSystemSettingQuery(key: string) {
+  const [setting] = await db
+    .select()
+    .from(systemSettings)
+    .where(eq(systemSettings.key, key));
+  return setting;
+}
+
+export async function setSystemSettingQuery(key: string, value: string) {
+  const [setting] = await db
+    .insert(systemSettings)
+    .values({ key, value })
+    .onConflictDoUpdate({
+      target: systemSettings.key,
+      set: { value, updatedAt: new Date() },
+    })
+    .returning();
+  return setting;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchAgentById, fetchLogs, fetchTransactions } from "@/lib/api/client";
 import { AgentCards } from "@/components/agents/agent-card";
 import { AgentLogs, AgentLogsHeader } from "@/components/agents/agent-logs";
@@ -24,6 +24,7 @@ interface PageProps {
 
 export default function AgentDetailPage({ params }: PageProps) {
   const { id } = use(params);
+  const queryClient = useQueryClient();
 
   const { data: agent, isLoading: agentLoading } = useQuery({
     queryKey: ["agents", id],
@@ -45,6 +46,10 @@ export default function AgentDetailPage({ params }: PageProps) {
 
   const agentLogs = allLogs?.filter((l) => l.agentId === id) ?? [];
   const agentTxs = allTransactions?.filter((t) => t.agentId === id) ?? [];
+
+  const handleRefreshLogs = () => {
+    queryClient.invalidateQueries({ queryKey: ["logs"] });
+  };
 
   return (
     <div className="container max-w-4xl mx-auto px-4 py-8">
@@ -97,7 +102,7 @@ export default function AgentDetailPage({ params }: PageProps) {
           >
             <AccordionItem value="logs" className="border rounded-lg px-4">
               <AccordionTrigger className="hover:no-underline">
-                <AgentLogsHeader />
+                <AgentLogsHeader onRefresh={handleRefreshLogs} />
               </AccordionTrigger>
               <AccordionContent>
                 <AgentLogs logs={agentLogs} isLoading={logsLoading} />

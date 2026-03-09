@@ -1,4 +1,3 @@
-import { WalletManager } from "../wallet/wallet-manager";
 import { getWalletByAgentIdQuery } from "../db/queries";
 import { getBalance } from "../solana/connection";
 
